@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="executionMode" value="BINARY" />
+    <option name="pathToExecutable" value="/opt/anaconda3/bin/black" />
+    <option name="sdkUUID" value="175d1d6b-d378-4d9c-9849-025411c8f214" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (FaceRecognitionAttendence)" project-jdk-type="Python SDK" />
+</project>
