@@ -19,7 +19,7 @@ cap = cv2.VideoCapture(0)  # open Camera (order of cam)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
-backGround = cv2.imread('Interface/background.JPG')  # import background
+backGround = cv2.imread('Interface/background.png')  # import background
 
 # IMPORT MODE OF CHECK ATTENDANCE IN THE LIST #
 modePath = 'Interface/Modes'
@@ -58,30 +58,30 @@ while True:
     encodeNewface = face_recognition.face_encodings(imageResize, faceCurrent)
 
     # define start point and end point on GUI (start y: end y, start x: end x)
-    backGround[162:(162 + 480), 55:(55 + 640)] = image  # point of Camera
+    backGround[183:(183 + 480), 66:(66 + 640)] = image  # point of Camera
     backGround[0:(0 + 800), 780:(780 + 500)] = modeList[0]  # point of modes
 
         # COMPARE ENCODING OF UNKNOW FACE AND KNOW FACE #
     # make loop of both together
     for encodeFace, faceLocation in zip(encodeNewface, faceCurrent):
         # compare if match, that return True
-        matches = face_recognition.compare_faces(encodeFaceList, encodeFace)
+        matches = face_recognition.compare_faces(encodeFaceList, encodeFace, tolerance = 0.5)
         # calculate distance on both of face and return float of different
         faceDistance = face_recognition.face_distance(encodeFaceList, encodeFace)
-        print("matches", matches)
-        print("faceDis", faceDistance)
+        #print("matches", matches)
+        #print("faceDis", faceDistance)
 
-        #matchIndex = np.argmin(faceDistance)
-        # print("match index ", matchIndex)
+        matchIndex = np.argmin(faceDistance)
+        #print("match index ", matchIndex)
 
-        #if matches[matchIndex]:
+        if matches[matchIndex]:
             # print("known face detected")
-            # print(studentIDList)
+            print(studentIDList)
 
-            #y1, x2, y2, x1 = faceLocation
-            #y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
-            #bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
-            #backGround = cvzone.cornerRect(backGround, bbox, rt=0)
+            y1, x2, y2, x1 = faceLocation
+            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+            bbox = 55 + x1, 162 + y1, x2 - x1, y2 - y1
+            backGround = cvzone.cornerRect(backGround, bbox, rt=0)
 
     cv2.imshow("Face Attendance", backGround)  # create GUI (display)
 
