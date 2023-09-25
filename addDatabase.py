@@ -40,7 +40,7 @@ for i in arr:
         "major": i[4],
         "year": i[2],
         "total attendance": i[5],
-        "rate attendace": i[6],
+        "rate attendance": i[6],
         "day": i[7],
         "check the time": i[8]
     }

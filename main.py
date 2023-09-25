@@ -16,8 +16,8 @@ import face_recognition
 # simple math method
 import numpy as np
 
+# day and time
 from datetime import datetime
-import re
 
 # manage database realtime
 import firebase_admin
@@ -35,6 +35,7 @@ firebase_admin.initialize_app(cred, {
     'storageBucket': "facerecognition-41dc8.appspot.com"
 })
 bucket = storage.bucket() # call data(image) from storage
+imageStudent = [] # store the image
 
     # START THE CAMERA #
 cap = cv2.VideoCapture(0)  # open Camera (order of cam)
@@ -49,17 +50,31 @@ modePathList = os.listdir(modePath)  # list of modename.file
 modeList = []
 
     # SETTING MODE #
-# 0 (onTime), 1 (mark), 2 (default), 3 (late)
-modeType = 2
-counter = 0
+# 0 (onTime), 1 (alraedy), 2 (notFound), 3 (mark), 4 (default), 5 (late)
+modeType = 3
+counter = 0 # count fram for change mode
 id = -1
-imageStudent = []
+checkMatche = 0
+
+# SETTING TIME #
+late = True
+alreadyCheck = False
+now = datetime.now()
+# morning class
+mr0900 = now.replace(hour = 9, minute = 0, second = 0)
+mr0915 = now.replace(hour = 9, minute = 15, second = 59)
+endClass1 = now.replace(hour = 12, minute = 00, second = 00)
+# afternoon class
+af1300 = now.replace(hour = 13, minute = 0, second = 0)
+af1315 = now.replace(hour = 13, minute = 15, second = 59)
+mid = now.replace(hour = 23, minute = 59, second = 59)
+
 
 for path in modePathList:
     # keep path of mode
     modeList.append(cv2.imread(os.path.join(modePath, path)))
 
-    # LODE THE ENCODING FILE #
+       # LODE THE ENCODING FILE #
 print("Loading Encode File...")
 # read(r) file .p that data is binary mode(b)
 file = open('EncodeFace.p', 'rb')
@@ -70,6 +85,7 @@ file.close()
 # separate data is 128 measure point and ID
 encodeFaceList, studentIDList = encodeListAndID
 print("Encode File Loaded")
+
 
 while True:
     success, image = cap.read()  # capture from camera by frame:frame
@@ -114,17 +130,35 @@ while True:
             backGround = cvzone.cornerRect(backGround, bbox, rt=0, colorC=(13, 100, 255))
             
             id = studentIDList[matchIndex]
+            
+            studentInfo = db.reference(f'Students/{id}').get()
+            if studentInfo['day'] != '0':
+                beforeDay = datetime.strptime(studentInfo['day'], "%d/%m/%Y")
+                lastChecking = datetime.strptime(studentInfo['check the time'], "%H:%M")
+                today = now.strftime("%d/%m/%Y")
+                if (beforeDay.strftime("%d/%m/%Y") == today and 
+                    (mr0900.strftime("%H:%M") <= lastChecking.strftime("%H:%M")  <= endClass1.strftime("%H:%M") 
+                    or af1300.strftime("%H:%M") <= lastChecking.strftime("%H:%M") <= mid.strftime("%H:%M"))):
+                    modeType = 1
+                    checkMatche = 0
+            
                 # CHANGE MODE #
             if counter == 0:
                 modeType = 0
                 counter = 1
+                checkMatche = 1
+        else:
+            modeType = 2
+            checkMatche = 0
+            counter = 0
+        backGround[0:(0 + 800), 780:(780 + 500)] = modeList[modeType]
                 
         # DOWNLOAD & UPLOAD INFORMATION OF STUDENTS WHO HAS ATTENDANCE #
-    if counter != 0:
+    if counter != 0 and checkMatche != 0:
         if counter == 1:
             # GET all information of the student
-            studentInfo = db.reference(f'Students/{id}').get()
-            print(studentInfo)
+            #studentInfo = db.reference(f'Students/{id}').get()
+            #print(studentInfo)
             
             # GET image of the student 
             blob = bucket.get_blob(f'showFace/{id}.jpg')
@@ -138,21 +172,43 @@ while True:
             ref.child('day').set(day)
                 
                 # time on attendance
-            checkingTime = datetime.now().strftime("%H:%M")
+            now = datetime.now()
+            checkingTime = now.strftime("%H:%M")
             ref.child('check the time').set(checkingTime)
+            
+            if mr0900 <= now <= mr0915 or af1300 <= now <= af1315:
+                late = False
             
                 # count attendance
             studentInfo['total attendance'] = str(int(studentInfo['total attendance']) + 1)
             ref.child('total attendance').set(studentInfo['total attendance'])
             if 'rate attendance' not in studentInfo:
                 studentInfo['rate attendance'] = 0
+            if late == True:
+                studentInfo['rate attendance'] = str(int(studentInfo['rate attendance']) + 1)
+                ref.child('rate attendance').set(studentInfo['rate attendance'])
         
         if 15 < counter < 25:
-            modeType = 1
+            modeType = 3
+
         backGround[0:(0 + 800), 780:(780 + 500)] = modeList[modeType]  # point of modes   
             
-        if counter <= 15:
+        if counter <= 15 and late == False:
                 # SHOW INFORMATION OF THE STUDENT #
+            cv2.putText(backGround, str(studentInfo['name']),(905, 415),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            cv2.putText(backGround, str(id),(985, 443),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            cv2.putText(backGround, str(studentInfo['degree']),(920, 486),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            cv2.putText(backGround, str(studentInfo['major']),(920, 513),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            cv2.putText(backGround, str(studentInfo['year']),(935, 540),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            cv2.putText(backGround, str(day),(877, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
+            cv2.putText(backGround, str(checkingTime),(1100, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
+            cv2.putText(backGround, str(studentInfo['total attendance']),(1037, 736),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            #cv2.putText(backGround, str(studentInfo['rate attendance']),(1037, 796),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
+            
+            backGround[184:184+175, 943:943+175] = imageStudent
+        elif counter <= 15 and late == True:
+            modeType = 5
+            # SHOW INFORMATION OF THE STUDENT #
             cv2.putText(backGround, str(studentInfo['name']),(905, 415),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
             cv2.putText(backGround, str(id),(985, 443),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
             cv2.putText(backGround, str(studentInfo['degree']),(920, 486),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
@@ -169,10 +225,10 @@ while True:
         
         if counter >= 30:
             counter = 0
-            modeType = 2
+            modeType = 4
             studentInfo = []
             imageStudent = []
-
+            
     cv2.imshow("Face Attendance", backGround)  # create GUI (display)
 
     # receive action from User on GUI
