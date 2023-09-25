@@ -51,7 +51,7 @@ modeList = []
 
     # SETTING MODE #
 # 0 (onTime), 1 (alraedy), 2 (notFound), 3 (mark), 4 (default), 5 (late)
-modeType = 3
+modeType = 4
 counter = 0 # count fram for change mode
 id = -1
 checkMatche = 0
@@ -141,6 +141,7 @@ while True:
                     or af1300.strftime("%H:%M") <= lastChecking.strftime("%H:%M") <= mid.strftime("%H:%M"))):
                     modeType = 1
                     checkMatche = 0
+                    counter = 1
             
                 # CHANGE MODE #
             if counter == 0:
@@ -203,7 +204,6 @@ while True:
             cv2.putText(backGround, str(day),(877, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
             cv2.putText(backGround, str(checkingTime),(1100, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
             cv2.putText(backGround, str(studentInfo['total attendance']),(1037, 736),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
-            #cv2.putText(backGround, str(studentInfo['rate attendance']),(1037, 796),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
             
             backGround[184:184+175, 943:943+175] = imageStudent
         elif counter <= 15 and late == True:
@@ -217,7 +217,6 @@ while True:
             cv2.putText(backGround, str(day),(877, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
             cv2.putText(backGround, str(checkingTime),(1100, 596),cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 1)
             cv2.putText(backGround, str(studentInfo['total attendance']),(1037, 736),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
-            #cv2.putText(backGround, str(studentInfo['rate attendance']),(1037, 796),cv2.FONT_HERSHEY_DUPLEX, 0.625, (0, 0, 0), 1)
             
             backGround[184:184+175, 943:943+175] = imageStudent
             
