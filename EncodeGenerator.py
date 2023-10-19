@@ -3,40 +3,38 @@ import cv2
 import face_recognition
 import pickle
 
-    # IMPORT STUDENT IMAGE INTO LIST #
-facePath = 'Images'
-facePathList = os.listdir(facePath) # list of facename.file
-faceList = []
-studentIDList = []
-    
-for path in facePathList:
-    if path == ".DS_Store":
-        continue
-    # keep path of mode
-    image = cv2.imread(os.path.join(facePath, path))
-    if image is not None:
-        faceList.append(image)
-        # split name and .file, fill name(ID) into list
-        studentIDList.append(os.path.splitext(path)[0])
-    else:
-        print(f"Unable to read image: {path}")
-    
-    # TRANSFORM OBJECT TO BIT #
-def findEncoding(imagesList):
-    encodeLit = []
-    for image in imagesList:
-        # change color BGR(openCV) to RGB(faceRecognition)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # encoding the image of face (128 measure point identify)
-        encode = face_recognition.face_encodings(image)[0]
-        encodeLit.append(encode)
-    return  encodeLit
+base_directory = 'Train'
+person_directories = [os.path.join(base_directory, directory_name) for directory_name in os.listdir(base_directory) if os.path.isdir(os.path.join(base_directory, directory_name))]
+
+all_encodings = []
+all_student_ids = []
+
+for person_directory in person_directories:
+    person_name = os.path.basename(person_directory)  # คุณสามารถใช้ชื่อของโฟลเดอร์เป็นชื่อของคน
+
+    person_image_list = os.listdir(person_directory)
+    person_encodings = []
+
+    for image_filename in person_image_list:
+        if image_filename == ".DS_Store":
+            continue
+        image = cv2.imread(os.path.join(person_directory, image_filename))
+        if image is not None:
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            face_encodings = face_recognition.face_encodings(image)
+            if len(face_encodings) > 0:
+                encode = face_encodings[0]
+                person_encodings.append(encode)
+
+    all_encodings.extend(person_encodings)
+    all_student_ids.extend([person_name] * len(person_encodings))
 
 print("Encoding Started...")
+encodeListAndID = [all_encodings, all_student_ids]
 # call method for encoding
-encodeFaceList = findEncoding(faceList)
+#encodeFaceList = findEncoding(faceList)
 # storage data by list (keep array encoding with ID)
-encodeListAndID = [encodeFaceList, studentIDList]
+#encodeListAndID = [encodeFaceList, studentIDList]
 print("Encoding Complete")
 
     # CREATE FILE FOR ENCODDING OBJECT PYTHON #

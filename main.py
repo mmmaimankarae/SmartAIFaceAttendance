@@ -86,7 +86,6 @@ file.close()
 encodeFaceList, studentIDList = encodeListAndID
 print("Encode File Loaded")
 
-
 while True:
     success, image = cap.read()  # capture from camera by frame:frame
 
