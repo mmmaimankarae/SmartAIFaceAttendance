@@ -1,0 +1,1 @@
+backGround[184:184+175, 943:943+175] = imageStudent

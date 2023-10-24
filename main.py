@@ -99,7 +99,7 @@ while True:
     faceCurrent = face_recognition.face_locations(imageResize)
 
         # ENCODING UNKNOW NEW FACE #
-    encodeNewface = face_recognition.face_encodings(imageResize, faceCurrent)
+    encodeNewface = face_recognition.face_encodings(imageResize, faceCurrent, num_jitters=10, model="cnn")
 
     # define start point and end point on GUI (start y: end y, start x: end x)
     backGround[168:(168 + 480), 70:(70 + 640)] = image  # point of Camera
@@ -109,7 +109,7 @@ while True:
     # make loop of both together
     for encodeFace, faceLocation in zip(encodeNewface, faceCurrent):
         # compare if match, that return True
-        matches = face_recognition.compare_faces(encodeFaceList, encodeFace, tolerance = 0.5)
+        matches = face_recognition.compare_faces(encodeFaceList, encodeFace, tolerance = 0.4)
         
         # calculate distance on both of face and return float of different
         faceDistance = face_recognition.face_distance(encodeFaceList, encodeFace)
@@ -119,7 +119,7 @@ while True:
         
             # CRATE RECTAGLE TO DETECT FACE #
         if matches[matchIndex]:
-            #print(studentIDList[matchIndex])
+            print(studentIDList[matchIndex])
             # points of face dectection
             y1, x2, y2, x1 = faceLocation
             y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
