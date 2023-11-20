@@ -85,7 +85,7 @@ file.close()
 # separate data is 128 measure point and ID
 encodeFaceList, studentIDList = encodeListAndID
 print("Encode File Loaded")
-
+global idG
 while True:
     success, image = cap.read()  # capture from camera by frame:frame
 
@@ -119,7 +119,7 @@ while True:
         
             # CRATE RECTAGLE TO DETECT FACE #
         if matches[matchIndex]:
-            print(studentIDList[matchIndex])
+            #print(studentIDList[matchIndex])
             # points of face dectection
             y1, x2, y2, x1 = faceLocation
             y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
@@ -127,9 +127,8 @@ while True:
             # setting point for frame dectect
             bbox = 45 + x1, 162 + y1, x2 - x1, y2 - y1
             backGround = cvzone.cornerRect(backGround, bbox, rt=0, colorC=(13, 100, 255))
-            
             id = studentIDList[matchIndex]
-            
+
             studentInfo = db.reference(f'Students/{id}').get()
             if studentInfo['day'] != '0':
                 beforeDay = datetime.strptime(studentInfo['day'], "%d/%m/%Y")
@@ -226,14 +225,16 @@ while True:
             modeType = 4
             studentInfo = []
             imageStudent = []
+    idG = id
             
     cv2.imshow("Face Attendance", backGround)  # create GUI (display)
+    #print(idG)
 
     # receive action from User on GUI
     key = cv2.waitKey(1)
     # exit when key q, Q, Esc
-    if key == ord('q') or key == ord('Q') or key == 27:
-        break
+    #if key == ord('q') or key == ord('Q') or key == 27:
+        #break
 
 # CLOSE THE GUI #
 cap.release()
