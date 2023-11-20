@@ -1,3 +1,8 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+/Train
+/showFace
+/AIsecList.csv
+/serviveAccountKey
+.DS_Store
